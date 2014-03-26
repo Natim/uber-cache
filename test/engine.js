@@ -52,6 +52,10 @@ module.exports = function(name, engineFactory) {
 
       it('should emit a "stale" on an expired cache', function(done) {
         var cache = engineFactory()
+        if (cache.hasOwnProperty('staleDisabled') && cache.staleDisabled) {
+          done();
+          return;
+        }
 
         cache.on('stale', function (key, value, ttl) {
           key.should.equal('abc')
@@ -105,9 +109,11 @@ module.exports = function(name, engineFactory) {
 
       it('should return a value when within the TTL', function() {
         var cache = engineFactory()
-        cache.set('test', 'hello', 20)
-        cache.get('test', function(error, value) {
-          value.should.eql('hello')
+        cache.set('test', 'hello', 20, function(err) {
+          if (err) throw err;
+          cache.get('test', function(error, value) {
+            value.should.eql('hello')
+          })
         })
       })
 
